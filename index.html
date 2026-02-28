@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NARC | Motion Lab Generator</title>
+    <style>
+        @font-face {
+            font-family: 'Integral CF';
+            src: url('./fonts/IntegralCF-Bold.woff2') format('woff2');
+            font-weight: bold;
+        }
+
+        :root {
+            --narc-bg: #0a0a0a;
+            --narc-card: #1c1c1e;
+            --narc-text: #ffffff;
+            --narc-subtext: #8e8e93;
+            --danger: #ff3b30;
+            --accent: #00c8ff; 
+            --special: #b300ff; 
+            --success: #2ecc71;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            background-color: var(--narc-bg);
+            color: var(--narc-text);
+            margin: 0; padding: 20px;
+            display: flex; justify-content: center;
+        }
+
+        .main-wrapper {
+            display: flex; flex-direction: column; gap: 30px; width: 100%; max-width: 1200px;
+        }
+
+        @media (min-width: 1024px) {
+            .main-wrapper { flex-direction: row; align-items: flex-start; }
+            .editor-side { flex: 1.2; padding-right: 10px; }
+            .preview-side { flex: 0.8; position: sticky; top: 20px; }
+        }
+
+        .container {
+            background: var(--narc-card); border-radius: 24px; padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid #2c2c2e;
+            margin-bottom: 20px;
+        }
+
+        .section-label { 
+            font-size: 11px; font-weight: 700; color: var(--narc-subtext); 
+            margin: 0 0 12px 5px; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .entry-card {
+            background: #2c2c2e; border-radius: 12px; padding: 15px;
+            margin-bottom: 15px; position: relative; border: 1px solid #3a3a3c;
+        }
+
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+        .full-width { grid-column: span 2; }
+
+        input {
+            border: 1px solid #3a3a3c; border-radius: 8px; padding: 10px;
+            font-size: 13px; background: #1c1c1e; color: white; outline: none; width: calc(100% - 22px);
+        }
+
+        .sponsor-logo-section {
+            grid-column: span 2; margin-top: 8px; padding: 10px;
+            background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px dashed #48484a;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .item-logo-in { width: 100%; background: transparent; border: none; padding: 0; font-size: 11px; }
+
+        .remove-entry-btn {
+            position: absolute; top: -10px; right: -10px;
+            background: var(--danger); color: white; border: none;
+            border-radius: 50%; width: 26px; height: 26px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5;
+        }
+        .remove-entry-btn::before { content: "×"; font-size: 18px; font-weight: bold; }
+
+        .remove-img-btn {
+            background: var(--danger); color: white; border: none; border-radius: 4px;
+            padding: 4px 8px; font-size: 10px; cursor: pointer; display: none; white-space: nowrap;
+        }
+
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+
+        /* Unified Button Styling */
+        button.main-btn, a.download-btn {
+            padding: 14px; border-radius: 12px; border: none; 
+            font-family: 'Integral CF', sans-serif; font-weight: 800; 
+            cursor: pointer; width: 100%; box-sizing: border-box;
+            transition: transform 0.1s, opacity 0.2s;
+            text-align: center; text-transform: uppercase;
+            font-size: 14px; display: block;
+        }
+        button.main-btn:active, a.download-btn:active { transform: scale(0.98); }
+        
+        .weekly-btn { background: var(--accent); color: #ffffff; }
+        .special-btn { background: var(--special); color: #fff; }
+        #gen-btn { background: #fff; color: #000; margin-top: 10px; }
+
+        #download-link { 
+            margin-top: 20px; background: var(--success); color: white; 
+            text-decoration: none; display: none; 
+        }
+
+        canvas { display: none; }
+        #preview { width: 100%; border-radius: 12px; border: 1px solid #3a3a3c; display: block; }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <div class="editor-side">
+            <div class="container">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <img src="./img/logo.png" style="height: 50px;" onerror="this.style.display='none'">
+                </div>
+
+                <div class="grid-inputs" style="margin-bottom: 15px;">
+                    <div>
+                        <div class="section-label">Month</div>
+                        <input type="text" id="month-in" value="MARCH">
+                    </div>
+                    <div>
+                        <div class="section-label">Year</div>
+                        <input type="text" id="year-in" value="2026">
+                    </div>
+                </div>
+
+                <div class="section-label">Footer Tagline</div>
+                <input type="text" id="footer-in" class="full-width" value="ALL PACES WELCOME | DISTANCES FLEXIBLE | POST RUN DRINKS" style="margin-bottom: 20px;">
+
+                <div class="button-group">
+                    <button id="add-weekly" class="main-btn weekly-btn">+ Weekly Run</button>
+                    <button id="add-special" class="main-btn special-btn">+ Special Run</button>
+                </div>
+
+                <button id="gen-btn" class="main-btn">Update Preview</button>
+            </div>
+
+            <div class="container">
+                <div class="section-label">Run Schedule Items</div>
+                <div id="entries"></div>
+            </div>
+        </div>
+
+        <div class="preview-side">
+            <div class="container">
+                <div class="section-label">Preview</div>
+                <img id="preview" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+                <a id="download-link" class="download-btn">Download PNG</a>
+            </div>
+            <canvas id="canvas" width="1080" height="1350"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const entriesDiv = document.getElementById('entries');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const mainLogo = new Image(); mainLogo.src = "./img/logo.png";
+        const bgImg = new Image(); bgImg.src = "./img/bg.jpg";
+
+        function createEntry(type) {
+            const div = document.createElement('div');
+            div.className = 'entry-card';
+            
+            const isWeekly = type === 'weekly';
+            const valDate = "2026-03-01";
+            const valTime = isWeekly ? "19:00" : "18:30";
+            const valTitle = isWeekly ? "5/10Km Easy Run" : "";
+            const valLoc = isWeekly ? "Kafee VanGogh - Dusartplein Hasselt" : "";
+
+            div.innerHTML = `
+                <button class="remove-entry-btn" onclick="this.parentElement.remove()"></button>
+                <div class="grid-inputs">
+                    <input type="date" class="date-in" value="${valDate}">
+                    <input type="time" class="time-in" value="${valTime}">
+                    <input type="text" class="comm-in full-width" placeholder="Title" value="${valTitle}">
+                    <input type="text" class="loc-in full-width" placeholder="Location" value="${valLoc}">
+                    <div class="sponsor-logo-section">
+                        <input type="file" class="item-logo-in" accept="image/*">
+                        <button class="remove-img-btn">Remove X</button>
+                    </div>
+                </div>
+            `;
+            entriesDiv.appendChild(div);
+
+            const fileInput = div.querySelector('.item-logo-in');
+            const removeImgBtn = div.querySelector('.remove-img-btn');
+
+            fileInput.onchange = e => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = event => { 
+                        div.dataset.logoData = event.target.result;
+                        removeImgBtn.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            removeImgBtn.onclick = () => {
+                fileInput.value = "";
+                delete div.dataset.logoData;
+                removeImgBtn.style.display = 'none';
+            };
+        }
+
+        createEntry('weekly');
+
+        document.getElementById('add-weekly').onclick = () => createEntry('weekly');
+        document.getElementById('add-special').onclick = () => createEntry('special');
+
+        document.getElementById('gen-btn').onclick = async function() {
+            try { await Promise.race([document.fonts.load('10pt "Integral CF"'), new Promise(res => setTimeout(res, 500))]); } catch(e) {}
+
+            const cards = Array.from(document.querySelectorAll('.entry-card'));
+            const sortedData = cards.map(card => {
+                const d = card.querySelector('.date-in').value;
+                const t = card.querySelector('.time-in').value;
+                return {
+                    ts: new Date(`${d}T${t}`),
+                    date: new Date(d),
+                    time: t,
+                    title: card.querySelector('.comm-in').value.toUpperCase(),
+                    loc: card.querySelector('.loc-in').value,
+                    logo: card.dataset.logoData
+                };
+            }).sort((a, b) => a.ts - b.ts);
+
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, 1080, 1350);
+            
+            if (bgImg.complete && bgImg.naturalWidth > 0) {
+                const scale = Math.max(canvas.width / bgImg.width, canvas.height / bgImg.height);
+                ctx.drawImage(bgImg, (canvas.width/2)-(bgImg.width/2)*scale, (canvas.height/2)-(bgImg.height/2)*scale, bgImg.width*scale, bgImg.height*scale);
+                ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(0, 0, 1080, 1350);
+            }
+
+            if (mainLogo.complete && mainLogo.naturalWidth > 0) {
+                const h = 100; const w = (mainLogo.width / mainLogo.height) * h;
+                ctx.drawImage(mainLogo, (1080 - w) / 2, 40, w, h);
+            }
+
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 28px "Integral CF", Helvetica';
+            ctx.textAlign = 'left'; ctx.fillText(document.getElementById('month-in').value.toUpperCase(), 80, 200);
+            ctx.textAlign = 'right'; ctx.fillText(document.getElementById('year-in').value, 1000, 200);
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(80, 215); ctx.lineTo(1000, 215); ctx.stroke();
+
+            for(let i = 0; i < sortedData.length; i++) {
+                const run = sortedData[i];
+                const y = 290 + (i * 90);
+                const dNum = isNaN(run.date) ? "00" : String(run.date.getDate()).padStart(2, '0');
+                const dName = isNaN(run.date) ? "RUN" : run.date.toLocaleDateString('en-GB', {weekday: 'short'}).toUpperCase();
+                
+                ctx.textAlign = 'left';
+                ctx.fillStyle = 'white'; 
+                ctx.font = 'bold 36px "Integral CF", Helvetica';
+                ctx.fillText(dNum, 80, y + 10);
+                
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 18px "Integral CF", Helvetica';
+                ctx.fillText(dName, 150, y - 5);
+                ctx.font = 'bold 18px Helvetica';
+                ctx.fillText(run.time, 150, y + 18);
+
+                ctx.fillStyle = 'white';
+                ctx.font = 'italic bold 32px "Integral CF", Helvetica';
+                ctx.fillText(run.title || "", 260, y + 2);
+                
+                ctx.fillStyle = '#aaa';
+                ctx.font = '22px "Integral CF", Helvetica';
+                ctx.fillText(run.loc || "", 260, y + 28);
+
+                if (run.logo) {
+                    await new Promise(resolve => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const h = 55; ctx.drawImage(img, 1000 - (h * (img.width/img.height)), y - 20, h * (img.width/img.height), h);
+                            resolve();
+                        };
+                        img.onerror = resolve; img.src = run.logo;
+                    });
+                }
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.beginPath(); ctx.moveTo(80, y + 45); ctx.lineTo(1000, y + 45); ctx.stroke();
+            }
+
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.font = 'bold 22px "Integral CF", Helvetica';
+            ctx.textAlign = 'center';
+            ctx.fillText(document.getElementById('footer-in').value, 540, 1320);
+
+            const dataUrl = canvas.toDataURL('image/png');
+            document.getElementById('preview').src = dataUrl;
+            
+            const monthVal = document.getElementById('month-in').value.trim() || 'schedule';
+            const yearVal = document.getElementById('year-in').value.trim() || '2026';
+            const dl = document.getElementById('download-link');
+            
+            dl.href = dataUrl; 
+            dl.download = `narc_schedule_${monthVal.toLowerCase()}_${yearVal}.png`; 
+            dl.style.display = 'block';
+        };
+    </script>
+</body>
+</html>
