@@ -3,53 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Narc Scheduler</title>
+    <title>Narc Scheduler Pro</title>
     <link rel="icon" href="./img/favicon.png" type="image/png">
     <style>
         @font-face {
             font-family: 'Integral CF';
-            src: url('./fonts/IntegralCF-Bold.woff2') format('woff2');
-            font-weight: bold;
+            src: url('./fonts/Integral CF Regular.woff2') format('woff2');
+            font-weight: normal;
         }
 
         :root {
             --narc-bg: #0a0a0a;
             --narc-card: #1c1c1e;
             --narc-text: #ffffff;
-            --narc-subtext: #8e8e93;
-            --danger: #ff3b30;
+            --narc-subtext: #a1a1a6;
             --accent: #00c8ff; 
             --special: #b300ff; 
             --success: #2ecc71;
+            --alt-color: #ffd98d;
+            --danger: #ff3b30;
+            --share: #25d366;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-            background-color: var(--narc-bg);
-            color: var(--narc-text);
-            margin: 0; padding: 20px;
-            display: flex; justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+            background-color: var(--narc-bg); color: var(--narc-text);
+            margin: 0; padding: 20px; display: flex; justify-content: center;
         }
 
-        .main-wrapper {
-            display: flex; flex-direction: column; gap: 30px; width: 100%; max-width: 1200px;
-        }
+        .main-wrapper { display: flex; flex-direction: column; gap: 30px; width: 100%; max-width: 1200px; }
 
         @media (min-width: 1024px) {
             .main-wrapper { flex-direction: row; align-items: flex-start; }
-            .editor-side { flex: 1.2; padding-right: 10px; }
+            .editor-side { flex: 1.2; }
             .preview-side { flex: 0.8; position: sticky; top: 20px; }
         }
 
         .container {
             background: var(--narc-card); border-radius: 24px; padding: 25px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid #2c2c2e;
-            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid #2c2c2e; margin-bottom: 20px;
         }
 
         .section-label { 
-            font-size: 11px; font-weight: 700; color: var(--narc-subtext); 
-            margin: 0 0 12px 5px; text-transform: uppercase; letter-spacing: 1px;
+            font-size: 10px; font-weight: 500; color: var(--narc-subtext); 
+            margin: 0 0 12px 5px; text-transform: uppercase; letter-spacing: 1.5px;
         }
 
         .entry-card {
@@ -60,55 +57,57 @@
         .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
         .full-width { grid-column: span 2; }
 
-        input {
+        input[type="text"], input[type="date"], input[type="time"] {
             border: 1px solid #3a3a3c; border-radius: 8px; padding: 10px;
-            font-size: 13px; background: #1c1c1e; color: white; outline: none; width: calc(100% - 22px);
+            font-size: 13px; background: #1c1c1e; color: white; outline: none; 
+            width: calc(100% - 22px); font-weight: 300;
         }
-
-        .sponsor-logo-section {
-            grid-column: span 2; margin-top: 8px; padding: 10px;
-            background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px dashed #48484a;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .item-logo-in { width: 100%; background: transparent; border: none; padding: 0; font-size: 11px; }
 
         .remove-entry-btn {
             position: absolute; top: -10px; right: -10px;
             background: var(--danger); color: white; border: none;
-            border-radius: 50%; width: 26px; height: 26px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5;
-        }
-        .remove-entry-btn::before {font-size: 18px; font-weight: bold; }
-
-        .remove-img-btn {
-            background: var(--danger); color: white; border: none; border-radius: 4px;
-            padding: 4px 8px; font-size: 10px; cursor: pointer; display: none; white-space: nowrap;
+            border-radius: 50%; width: 24px; height: 24px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; z-index: 5;
+            font-weight: bold; font-size: 14px;
         }
 
-        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-
-        /* Unified Button Styling */
-        button.main-btn, a.download-btn {
+        button.main-btn {
             padding: 14px; border-radius: 12px; border: none; 
-            font-family: 'Integral CF', sans-serif; font-weight: 800; 
-            cursor: pointer; width: 100%; box-sizing: border-box;
-            transition: transform 0.1s, opacity 0.2s;
-            text-align: center; text-transform: uppercase;
-            font-size: 14px; display: block;
+            font-family: 'Integral CF', sans-serif; cursor: pointer; 
+            width: 100%; text-transform: uppercase; font-size: 13px;
         }
-        button.main-btn:active, a.download-btn:active { transform: scale(0.98); }
         
-        .weekly-btn { background: var(--accent); color: #ffffff; }
-        .special-btn { background: var(--special); color: #fff; }
-        #gen-btn { background: #fff; color: #000; margin-top: 10px; }
-
-        #download-link { 
+        .weekly-btn { background: var(--accent); color: white; margin-bottom: 10px; }
+        .special-btn { background: var(--special); color: white; }
+        .share-btn { background: var(--share); color: white; margin-top: 10px; }
+        #gen-btn { background: #fff; color: #000; margin-top: 15px; font-weight: 700; }
+        
+        .download-btn { 
             margin-top: 20px; background: var(--success); color: white; 
-            text-decoration: none; display: none; 
+            text-decoration: none; display: block; text-align: center; padding: 14px; border-radius: 12px;
+            font-family: 'Integral CF', sans-serif; cursor: pointer;
         }
+
+        .import-wrap { margin-bottom: 20px; border: 1px dashed #3a3a3c; padding: 15px; border-radius: 12px; text-align: center; }
 
         canvas { display: none; }
-        #preview { width: 100%; border-radius: 12px; border: 1px solid #3a3a3c; display: block; }
+        
+        .preview-box {
+            width: 100%; aspect-ratio: 1080/1350; border-radius: 12px; 
+            border: 1px solid #3a3a3c; position: relative; overflow: hidden;
+            background: #000; display: flex; align-items: center; justify-content: center;
+        }
+        #preview-placeholder { color: #444; font-family: 'Integral CF'; font-size: 14px; letter-spacing: 2px; }
+        #preview { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; }
+        
+        .smart-header-info {
+            background: rgba(0, 200, 255, 0.05); border: 1px solid rgba(0, 200, 255, 0.3);
+            padding: 12px; border-radius: 12px; margin-bottom: 15px; font-size: 12px;
+            color: var(--accent); font-weight: 400; text-align: center; font-family: 'Integral CF', sans-serif;
+        }
+
+        .alt-check-wrap { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; color: var(--narc-subtext); }
+        .alt-check-wrap input:checked + span { color: var(--alt-color); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -117,44 +116,42 @@
         <div class="editor-side">
             <div class="container">
                 <div style="text-align: center; margin-bottom: 25px;">
-                    <img src="./img/logo.png" style="height: 50px;" onerror="this.style.display='none'">
+                    <img src="./img/logo.png" style="height: 40px;" onerror="this.style.display='none'">
                 </div>
 
-                <div class="grid-inputs" style="margin-bottom: 15px;">
-                    <div>
-                        <div class="section-label">Month</div>
-                        <input type="text" id="month-in" value="MARCH">
-                    </div>
-                    <div>
-                        <div class="section-label">Year</div>
-                        <input type="text" id="year-in" value="2026">
-                    </div>
-                </div>
-
+                <div id="smart-header-display" class="smart-header-info">ADD RUNS</div>
                 <div class="section-label">Footer Tagline</div>
-                <input type="text" id="footer-in" class="full-width" value="ALL PACES WELCOME | DISTANCES FLEXIBLE | POST RUN DRINKS" style="margin-bottom: 20px;">
-
-                <div class="button-group">
+                <input type="text" id="footer-in" class="full-width" value="ALL PACES WELCOME | DISTANCES FLEXIBLE | POST RUN DRINKS">
+                
+                <div style="margin-top: 20px;">
                     <button id="add-weekly" class="main-btn weekly-btn">+ Weekly Run</button>
                     <button id="add-special" class="main-btn special-btn">+ Special Run</button>
                 </div>
+                
+                <div class="import-wrap" style="margin-top: 20px;">
+                    <div class="section-label">Load Existing Schedule</div>
+                    <input type="file" id="import-file" accept=".narc,.json" style="font-size: 11px;">
+                </div>
 
-                <button id="gen-btn" class="main-btn">Update Preview</button>
             </div>
-
-            <div class="container">
+            <div class="container" id="entries">
                 <div class="section-label">Run Schedule Items</div>
-                <div id="entries"></div>
             </div>
         </div>
 
         <div class="preview-side">
             <div class="container">
                 <div class="section-label">Preview</div>
-                <img id="preview" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
-                <a id="download-link" class="download-btn">Download PNG</a>
+                <div class="preview-box">
+                    <span id="preview-placeholder">HIT UPDATE TO GENERATE</span>
+                    <img id="preview">
+                </div>
+                <a id="download-link" class="download-btn" style="display:none;" download="NARC_Schedule.png">Download PNG</a>
             </div>
             <canvas id="canvas" width="1080" height="1350"></canvas>
+
+                <button id="gen-btn" class="main-btn">Update Preview</button>
+                <button id="share-schedule" class="main-btn share-btn">Export</button>
         </div>
     </div>
 
@@ -162,153 +159,168 @@
         const entriesDiv = document.getElementById('entries');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
+        const smartHeaderDisplay = document.getElementById('smart-header-display');
         const mainLogo = new Image(); mainLogo.src = "./img/logo.png";
         const bgImg = new Image(); bgImg.src = "./img/bg.jpg";
 
-        function createEntry(type) {
+        function getHeaderData(dates) {
+            if (dates.length === 0) return { range: "ADD RUNS", year: "2026" };
+            const firstDate = new Date(dates[0]);
+            const day = firstDate.getDay();
+            const diff = firstDate.getDate() - day + (day === 0 ? -6 : 1); 
+            const monday = new Date(new Date(firstDate).setDate(diff));
+            const sunday = new Date(new Date(monday).setDate(monday.getDate() + 6));
+            const month = monday.toLocaleDateString('en-GB', { month: 'long' }).toUpperCase();
+            const sunMonth = sunday.toLocaleDateString('en-GB', { month: 'long' }).toUpperCase();
+            let range = monday.getMonth() === sunday.getMonth() ? 
+                   `${month} ${monday.getDate()} - ${sunday.getDate()}` :
+                   `${month} ${monday.getDate()} - ${sunMonth} ${sunday.getDate()}`;
+            return { range, year: monday.getFullYear() };
+        }
+
+        function createEntry(type, savedData = null) {
             const div = document.createElement('div');
             div.className = 'entry-card';
+            div.dataset.logo = savedData?.logo || "";
             
-            const isWeekly = type === 'weekly';
-            const valDate = "2026-03-01";
-            const valTime = isWeekly ? "19:00" : "18:30";
-            const valTitle = isWeekly ? "5/10Km Easy Run" : "";
-            const valLoc = isWeekly ? "Kafee VanGogh - Dusartplein Hasselt" : "";
-
             div.innerHTML = `
-                <button class="remove-entry-btn" onclick="this.parentElement.remove()"></button>
+                <button class="remove-entry-btn" onclick="this.parentElement.remove(); updateSmartHeader();">×</button>
                 <div class="grid-inputs">
-                    <input type="date" class="date-in" value="${valDate}">
-                    <input type="time" class="time-in" value="${valTime}">
-                    <input type="text" class="comm-in full-width" placeholder="Title" value="${valTitle}">
-                    <input type="text" class="loc-in full-width" placeholder="Location" value="${valLoc}">
-                    <div class="sponsor-logo-section">
-                        <input type="file" class="item-logo-in" accept="image/*">
-                        <button class="remove-img-btn"></button>
+                    <input type="date" class="date-in" value="${savedData?.date || new Date().toISOString().split('T')[0]}" onchange="updateSmartHeader()">
+                    <input type="time" class="time-in" value="${savedData?.time || (type==='weekly'?'19:00':'18:30')}">
+                    <input type="text" class="comm-in full-width" placeholder="TITLE" value="${savedData?.title || (type==='weekly'?'5/10KM EASY RUN':'')}">
+                    <input type="text" class="loc-in full-width" placeholder="LOCATION" value="${savedData?.loc || (type==='weekly'?'Kafee VanGogh - Dusartplein Hasselt':'')}">
+                    <div class="alt-check-wrap full-width">
+                        <label><input type="checkbox" class="is-alt" ${savedData?.isAlt ? 'checked' : ''}> <span>Alternate Color</span></label>
+                        <input type="file" class="logo-file" accept="image/*" style="margin-left:15px;">
                     </div>
-                </div>
-            `;
+                </div>`;
             entriesDiv.appendChild(div);
-
-            const fileInput = div.querySelector('.item-logo-in');
-            const removeImgBtn = div.querySelector('.remove-img-btn');
-
-            fileInput.onchange = e => {
+            div.querySelector('.logo-file').onchange = (e) => {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = event => { 
-                        div.dataset.logoData = event.target.result;
-                        removeImgBtn.style.display = 'block';
-                    };
+                    reader.onload = (ev) => div.dataset.logo = ev.target.result;
                     reader.readAsDataURL(file);
                 }
             };
-
-            removeImgBtn.onclick = () => {
-                fileInput.value = "";
-                delete div.dataset.logoData;
-                removeImgBtn.style.display = 'none';
-            };
+            updateSmartHeader();
         }
 
-        createEntry('weekly');
+        function updateSmartHeader() {
+            const dates = Array.from(document.querySelectorAll('.date-in')).map(i => i.value).filter(v => v);
+            const head = getHeaderData(dates);
+            smartHeaderDisplay.innerText = `${head.range}  |  ${head.year}`;
+        }
 
+        // --- EXPORT & SHARE LOGIC ---
+        document.getElementById('share-schedule').onclick = async () => {
+            const cards = Array.from(document.querySelectorAll('.entry-card'));
+            const scheduleObj = {
+                footer: document.getElementById('footer-in').value,
+                runs: cards.map(c => ({
+                    date: c.querySelector('.date-in').value,
+                    time: c.querySelector('.time-in').value,
+                    title: c.querySelector('.comm-in').value,
+                    loc: c.querySelector('.loc-in').value,
+                    isAlt: c.querySelector('.is-alt').checked,
+                    logo: c.dataset.logo || null
+                }))
+            };
+
+            const blob = new Blob([JSON.stringify(scheduleObj)], { type: 'application/json' });
+            const file = new File([blob], `NARC_Schedule_${new Date().toISOString().split('T')[0]}.narc`, { type: 'application/json' });
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: 'NARC Run Schedule',
+                        text: 'Here is the latest run schedule file.'
+                    });
+                } catch (err) { console.error("Share failed", err); }
+            } else {
+                // Fallback for desktop: Download
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = file.name;
+                a.click();
+            }
+        };
+
+        // --- IMPORT LOGIC ---
+        document.getElementById('import-file').onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const data = JSON.parse(ev.target.result);
+                document.getElementById('footer-in').value = data.footer || "";
+                entriesDiv.innerHTML = '<div class="section-label">Run Schedule Items</div>';
+                data.runs.forEach(run => createEntry('custom', run));
+            };
+            reader.readAsText(file);
+        };
+
+        createEntry('weekly');
         document.getElementById('add-weekly').onclick = () => createEntry('weekly');
         document.getElementById('add-special').onclick = () => createEntry('special');
 
         document.getElementById('gen-btn').onclick = async function() {
-            try { await Promise.race([document.fonts.load('10pt "Integral CF"'), new Promise(res => setTimeout(res, 500))]); } catch(e) {}
-
             const cards = Array.from(document.querySelectorAll('.entry-card'));
-            const sortedData = cards.map(card => {
-                const d = card.querySelector('.date-in').value;
-                const t = card.querySelector('.time-in').value;
-                return {
-                    ts: new Date(`${d}T${t}`),
-                    date: new Date(d),
-                    time: t,
-                    title: card.querySelector('.comm-in').value.toUpperCase(),
-                    loc: card.querySelector('.loc-in').value,
-                    logo: card.dataset.logoData
-                };
-            }).sort((a, b) => a.ts - b.ts);
+            const data = cards.map(c => ({
+                date: new Date(c.querySelector('.date-in').value),
+                time: c.querySelector('.time-in').value,
+                title: c.querySelector('.comm-in').value.toUpperCase(),
+                loc: c.querySelector('.loc-in').value,
+                logo: c.dataset.logo,
+                isAlt: c.querySelector('.is-alt').checked
+            })).sort((a,b) => a.date - b.date);
 
-            ctx.fillStyle = '#0a0a0a';
-            ctx.fillRect(0, 0, 1080, 1350);
-            
-            if (bgImg.complete && bgImg.naturalWidth > 0) {
-                const scale = Math.max(canvas.width / bgImg.width, canvas.height / bgImg.height);
-                ctx.drawImage(bgImg, (canvas.width/2)-(bgImg.width/2)*scale, (canvas.height/2)-(bgImg.height/2)*scale, bgImg.width*scale, bgImg.height*scale);
-                ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(0, 0, 1080, 1350);
+            ctx.fillStyle = '#0a0a0a'; ctx.fillRect(0,0,1080,1350);
+            if(bgImg.complete) {
+                const s = Math.max(1080/bgImg.width, 1350/bgImg.height);
+                ctx.drawImage(bgImg, 540-(bgImg.width*s)/2, 675-(bgImg.height*s)/2, bgImg.width*s, bgImg.height*s);
+                ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(0,0,1080,1350);
+            }
+            if(mainLogo.complete) {
+                const h=100, w=(mainLogo.width/mainLogo.height)*h;
+                ctx.drawImage(mainLogo, 540-w/2, 50, w, h);
             }
 
-            if (mainLogo.complete && mainLogo.naturalWidth > 0) {
-                const h = 100; const w = (mainLogo.width / mainLogo.height) * h;
-                ctx.drawImage(mainLogo, (1080 - w) / 2, 40, w, h);
-            }
+            const head = getHeaderData(Array.from(document.querySelectorAll('.date-in')).map(i => i.value).filter(v => v));
+            ctx.fillStyle = 'white'; ctx.font = '28px "Integral CF"'; 
+            ctx.textAlign = 'left'; ctx.fillText(head.range, 100, 215);
+            ctx.textAlign = 'right'; ctx.fillText(head.year, 980, 215);
 
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 28px "Integral CF", Helvetica';
-            ctx.textAlign = 'left'; ctx.fillText(document.getElementById('month-in').value.toUpperCase(), 80, 200);
-            ctx.textAlign = 'right'; ctx.fillText(document.getElementById('year-in').value, 1000, 200);
-            ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.moveTo(80, 215); ctx.lineTo(1000, 215); ctx.stroke();
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth=1;
+            ctx.beginPath(); ctx.moveTo(100, 245); ctx.lineTo(980, 245); ctx.stroke();
 
-            for(let i = 0; i < sortedData.length; i++) {
-                const run = sortedData[i];
-                const y = 290 + (i * 90);
-                const dNum = isNaN(run.date) ? "00" : String(run.date.getDate()).padStart(2, '0');
-                const dName = isNaN(run.date) ? "RUN" : run.date.toLocaleDateString('en-GB', {weekday: 'short'}).toUpperCase();
-                
-                ctx.textAlign = 'left';
-                ctx.fillStyle = 'white'; 
-                ctx.font = 'bold 36px "Integral CF", Helvetica';
-                ctx.fillText(dNum, 80, y + 10);
-                
-                ctx.fillStyle = 'white';
-                ctx.font = 'bold 18px "Integral CF", Helvetica';
-                ctx.fillText(dName, 150, y - 5);
-                ctx.font = 'bold 18px Helvetica';
-                ctx.fillText(run.time, 150, y + 18);
-
-                ctx.fillStyle = 'white';
-                ctx.font = 'italic bold 32px "Integral CF", Helvetica';
-                ctx.fillText(run.title || "", 260, y + 2);
-                
-                ctx.fillStyle = '#aaa';
-                ctx.font = '22px "Integral CF", Helvetica';
-                ctx.fillText(run.loc || "", 260, y + 28);
-
-                if (run.logo) {
-                    await new Promise(resolve => {
-                        const img = new Image();
-                        img.onload = () => {
-                            const h = 55; ctx.drawImage(img, 1000 - (h * (img.width/img.height)), y - 20, h * (img.width/img.height), h);
-                            resolve();
-                        };
-                        img.onerror = resolve; img.src = run.logo;
-                    });
+            const yStart = 400; const yStep = 160; 
+            for(let i=0; i<data.length; i++) {
+                const r = data[i]; const y = yStart + (i * yStep);
+                const activeColor = r.isAlt ? '#ffd98d' : 'white';
+                ctx.textAlign = 'left'; ctx.fillStyle = activeColor; ctx.font = '64px "Integral CF"';
+                ctx.fillText(String(r.date.getDate()).padStart(2,'0'), 100, y);
+                ctx.font = 'bold 18px "Integral CF"'; ctx.fillText(r.date.toLocaleDateString('en-GB',{weekday:'short'}).toUpperCase(), 210, y - 32);
+                ctx.font = 'bold 18px Helvetica'; ctx.fillText(r.time, 210, y);
+                const maxW = r.logo ? 500 : 640;
+                ctx.font = 'italic 36px "Integral CF"'; ctx.fillText(r.title, 340, y - 18, maxW);
+                ctx.fillStyle = r.isAlt ? activeColor : '#aaa';
+                ctx.font = '19px Helvetica'; ctx.fillText(r.loc, 340, y);
+                if(r.logo) {
+                    const img = new Image();
+                    await new Promise(res => { img.onload = () => {
+                        const h=70, w=h*(img.width/img.height); ctx.drawImage(img, 980-w, y-60, w, h); res();
+                    }; img.onerror = res; img.src = r.logo; });
                 }
-                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-                ctx.beginPath(); ctx.moveTo(80, y + 45); ctx.lineTo(1000, y + 45); ctx.stroke();
             }
-
-            ctx.fillStyle = 'rgba(255,255,255,0.4)';
-            ctx.font = 'bold 22px "Integral CF", Helvetica';
-            ctx.textAlign = 'center';
-            ctx.fillText(document.getElementById('footer-in').value, 540, 1320);
-
-            const dataUrl = canvas.toDataURL('image/png');
-            document.getElementById('preview').src = dataUrl;
-            
-            const monthVal = document.getElementById('month-in').value.trim() || 'schedule';
-            const yearVal = document.getElementById('year-in').value.trim() || '2026';
-            const dl = document.getElementById('download-link');
-            
-            dl.href = dataUrl; 
-            dl.download = `narc_schedule_${monthVal.toLowerCase()}_${yearVal}.png`; 
-            dl.style.display = 'block';
+            ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = '20px "Integral CF"'; ctx.textAlign='center';
+            ctx.fillText(document.getElementById('footer-in').value, 540, 1315);
+            const out = canvas.toDataURL('image/png');
+            const p = document.getElementById('preview'); p.src = out; p.style.display = 'block';
+            document.getElementById('preview-placeholder').style.display = 'none';
+            const dl = document.getElementById('download-link'); dl.href = out; dl.style.display = 'block';
         };
     </script>
 </body>
