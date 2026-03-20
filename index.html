@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="./img/favicon.png">
+    <link rel="icon" type="image/x-icon" href="./img/favicon.png">
     <title>Narc Scheduler</title>
     <style>
         @font-face {
@@ -61,10 +62,16 @@
             width: 100%; font-weight: 300; box-sizing: border-box;
         }
 
-        .multi-dist-wrap {
+        .ui-blob {
             display: flex; flex-wrap: wrap; gap: 8px; background: #1c1c1e;
-            padding: 10px; border-radius: 8px; border: 1px solid #3a3a3c;
+            padding: 12px; border-radius: 8px; border: 1px solid #3a3a3c;
+            position: relative;
         }
+        
+        .logo-controls-blob {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center;
+        }
+
         .dist-chip { font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer; color: #aaa; }
         .dist-chip input[type="checkbox"] { width: auto; margin: 0; }
         .dist-chip input:checked + span { color: var(--narc-text); font-weight: bold; }
@@ -81,6 +88,20 @@
             display: flex; align-items: center; justify-content: center; z-index: 5;
             font-weight: bold; font-size: 14px;
         }
+        
+        .clear-logo-blob-btn {
+            position: absolute; top: -6px; right: -6px;
+            background: var(--danger); color: white; border: none;
+            border-radius: 50%; width: 18px; height: 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; z-index: 5;
+            font-weight: bold; font-size: 12px;
+        }
+
+        .alt-color-wrap {
+            display: flex; align-items: center; gap: 8px; margin-top: 5px;
+            font-size: 11px; color: var(--narc-subtext); cursor: pointer;
+        }
+        .alt-color-wrap input { width: auto; cursor: pointer; }
 
         button.main-btn {
             padding: 14px; border-radius: 12px; border: none; 
@@ -150,12 +171,19 @@
         const DIST_OPTIONS = ["5", "10", "16", "21", "30", "42"];
         const MAX_ENTRIES = 7;
 
-        // LAYOUT SETTINGS - Adjusted for 7 items
+        const PRESET_LOGOS = [
+            { name: "Kafee VanGogh", path: "./img/logos/vangogh.png" },
+            { name: "gigi", path: "./img/logos/gigi.png" },
+            { name: "sun run club", path: "./img/logos/src.png" },
+
+
+        ];
+
         const LAYOUT_Y_START = 340;     
         const LAYOUT_Y_STEP = 150;      
         const TITLE_Y_OFFSET = -6;      
         const LOC_Y_OFFSET = 0;         
-        const INFO_X_START = 560;       
+        const INFO_X_START = 460; 
 
         function getHeaderData(dates) {
             if (dates.length === 0) return { range: "ADD RUNS", year: "2026" };
@@ -170,73 +198,98 @@
         }
 
         function createEntry(type, savedData = null) {
-    const currentEntries = document.querySelectorAll('.entry-card').length;
-    if (currentEntries >= MAX_ENTRIES) {
-        alert(`Maximum of ${MAX_ENTRIES} runs reached.`);
-        return;
-    }
+            const currentEntries = document.querySelectorAll('.entry-card').length;
+            if (currentEntries >= MAX_ENTRIES) return;
 
-    const div = document.createElement('div');
-    div.className = 'entry-card';
-    div.dataset.logo = savedData?.logo || "";
-    
-    // Logic for Special vs Weekly defaults
-    const isSpecial = type === 'special';
-    const defaultDate = savedData?.date || new Date().toISOString().split('T')[0];
-    const defaultTime = savedData?.time || (isSpecial ? '' : '19:00');
-    const defaultTitle = savedData?.title || (isSpecial ? '' : 'NARC');
-    const defaultLoc = savedData?.loc || (isSpecial ? '' : 'Kafee VanGogh - Hasselt');
-    const defaultAlt = savedData ? savedData.isAlt : (isSpecial ? true : false);
-    const selectedDists = savedData?.dists || (isSpecial ? [] : ["5", "10"]);
+            const div = document.createElement('div');
+            div.className = 'entry-card';
+            div.dataset.logo = savedData?.logo || "";
+            
+            const isSpecial = type === 'special';
+            const defaultAlt = savedData ? savedData.isAlt : (isSpecial ? true : false);
+            const selectedDists = savedData?.dists || (isSpecial ? [] : ["5", "10"]);
 
-    const distHtml = DIST_OPTIONS.map(opt => `
-        <label class="dist-chip">
-            <input type="checkbox" value="${opt}" ${selectedDists.includes(opt) ? 'checked' : ''}>
-            <span>${opt}</span>
-        </label>
-    `).join('');
+            const logoOptions = PRESET_LOGOS.map(l => 
+                `<option value="${l.path}" ${savedData?.logo === l.path ? 'selected' : ''}>${l.name}</option>`
+            ).join('');
 
-    div.innerHTML = `
-        <button class="remove-entry-btn" onclick="this.parentElement.remove();">×</button>
-        <div class="grid-inputs">
-            <input type="date" class="date-in" value="${defaultDate}">
-            <input type="text" class="time-in" placeholder="TIME" value="${defaultTime}">
-            <div class="multi-dist-wrap full-width">
-                <span style="font-size:9px; width:100%; color:#888;">DISTANCES</span>
-                ${distHtml}
-                <input type="text" class="custom-dist-in" placeholder="+ CUSTOM" value="${savedData?.customDist || ''}">
-            </div>
-            <div class="full-width" style="display:flex; gap:10px;">
-                <select class="pace-in" style="flex:1;">
-                    <option value="" ${isSpecial ? 'selected' : ''}>NO PACE</option>
-                    <option value=">6:30" ${savedData?.pace === '>6:30' || (!savedData && !isSpecial) ? 'selected' : ''}>>6:30 PACE</option>
-                    <option value="<6:00" ${savedData?.pace === '<6:00' ? 'selected' : ''}><6:00 PACE</option>
-                </select>
-                <input type="text" class="custom-pace-in" placeholder="CUSTOM PACE" style="flex:1;" value="${savedData?.customPace || ''}">
-            </div>
-            <input type="text" class="comm-in full-width" placeholder="TITLE" value="${defaultTitle}">
-            <input type="text" class="loc-in full-width" placeholder="LOCATION" value="${defaultLoc}">
-            <div class="full-width" style="display:flex; align-items:center; gap:10px;">
-                <label style="font-size:11px; color:#888;"><input type="checkbox" class="is-alt" ${defaultAlt ? 'checked' : ''}> ALT COLOR</label>
-                <input type="file" class="logo-file" accept="image/*" style="font-size:10px;">
-            </div>
-        </div>`;
-    entriesDiv.appendChild(div);
-    
-    div.querySelector('.logo-file').onchange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (ev) => div.dataset.logo = ev.target.result;
-            reader.readAsDataURL(file);
+            div.innerHTML = `
+                <button class="remove-entry-btn" onclick="this.parentElement.remove();">×</button>
+                <div class="grid-inputs">
+                    <input type="date" class="date-in" value="${savedData?.date || new Date().toISOString().split('T')[0]}">
+                    <input type="text" class="time-in" placeholder="TIME" value="${savedData?.time || (isSpecial ? '' : '19:00')}">
+                    
+                    <div class="ui-blob full-width">
+                        <span style="font-size:9px; width:100%; color:#888;">DISTANCES</span>
+                        ${DIST_OPTIONS.map(opt => `
+                            <label class="dist-chip">
+                                <input type="checkbox" value="${opt}" ${selectedDists.includes(opt) ? 'checked' : ''}>
+                                <span>${opt}</span>
+                            </label>
+                        `).join('')}
+                        <input type="text" class="custom-dist-in" placeholder="+ CUSTOM" value="${savedData?.customDist || ''}">
+                    </div>
+                    
+                    <div class="full-width" style="display:flex; gap:10px;">
+                        <select class="pace-in" style="flex:1;">
+                            <option value="" ${isSpecial ? 'selected' : ''}>NO PACE</option>
+                            <option value=">6:30" ${savedData?.pace === '>6:30' || (!savedData && !isSpecial) ? 'selected' : ''}>>6:30 PACE</option>
+                            <option value="<6:00" ${savedData?.pace === '<6:00' ? 'selected' : ''}><6:00 PACE</option>
+                        </select>
+                        <input type="text" class="custom-pace-in" placeholder="CUSTOM PACE" style="flex:1;" value="${savedData?.customPace || ''}">
+                    </div>
+
+                    <input type="text" class="comm-in full-width" placeholder="TITLE" value="${savedData?.title || (isSpecial ? '' : 'NARC')}">
+                    <input type="text" class="loc-in full-width" placeholder="LOCATION" value="${savedData?.loc || (isSpecial ? '' : 'Kafee VanGogh - Hasselt')}">
+                    
+                    <div class="ui-blob full-width logo-controls-blob">
+                        <button type="button" class="clear-logo-blob-btn">×</button>
+                        <select class="logo-preset-sel">
+                            <option value="">-- PRESET LOGO --</option>
+                            ${logoOptions}
+                        </select>
+                        <input type="file" class="logo-file" accept="image/*" style="font-size:10px;">
+                    </div>
+
+                    <label class="alt-color-wrap full-width">
+                        <input type="checkbox" class="is-alt" ${defaultAlt ? 'checked' : ''}> ALT COLOR
+                    </label>
+                </div>`;
+
+            entriesDiv.appendChild(div);
+
+            const sel = div.querySelector('.logo-preset-sel');
+            const fileIn = div.querySelector('.logo-file');
+            const clearLogoBtn = div.querySelector('.clear-logo-blob-btn');
+
+            sel.onchange = (e) => { 
+                div.dataset.logo = e.target.value; 
+                if(e.target.value) fileIn.value = "";
+            };
+
+            fileIn.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        div.dataset.logo = ev.target.result;
+                        sel.value = ""; 
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            clearLogoBtn.onclick = () => {
+                div.dataset.logo = "";
+                sel.value = "";
+                fileIn.value = "";
+            };
         }
-    };
-}
 
         async function updatePreview() {
             const cards = Array.from(document.querySelectorAll('.entry-card'));
             const data = cards.map(c => {
-                const dList = Array.from(c.querySelectorAll('.multi-dist-wrap input:checked')).map(cb => cb.value);
+                const dList = Array.from(c.querySelectorAll('.ui-blob input:checked')).map(cb => cb.value);
                 const customD = c.querySelector('.custom-dist-in').value;
                 if(customD) dList.push(customD);
                 const customP = c.querySelector('.custom-pace-in').value;
@@ -281,12 +334,14 @@
                 ctx.fillStyle = colorSub; ctx.font = '18px Helvetica'; ctx.fillText(r.time, 210, y);
 
                 ctx.textAlign = 'left'; ctx.fillStyle = colorMain;
-                ctx.font = 'bold 20px "Integral CF"'; ctx.fillText(`📏 ${r.distStr}`, 340, y - 32);
-                ctx.fillStyle = colorSub; ctx.font = '18px Helvetica'; ctx.fillText(`🏃‍♀️ ${r.pace}`, 340, y);
+                ctx.font = 'bold 20px "Integral CF"'; 
+                if(r.distStr) ctx.fillText(`📏 ${r.distStr}`, 340, y - 32);
+                ctx.fillStyle = colorSub; ctx.font = '18px Helvetica'; 
+                if(r.pace) ctx.fillText(`🏃‍♀️ ${r.pace}`, 340, y);
 
                 ctx.textAlign = 'left'; ctx.fillStyle = colorMain;
-                ctx.font = 'italic 34px "Integral CF"'; ctx.fillText(r.title, INFO_X_START, (y - 18) + TITLE_Y_OFFSET, r.logo ? 300 : 420);
-                ctx.fillStyle = colorSub; ctx.font = '17px Helvetica'; ctx.fillText(r.loc, INFO_X_START, y + LOC_Y_OFFSET, r.logo ? 300 : 420);
+                ctx.font = 'italic 34px "Integral CF"'; ctx.fillText(r.title, INFO_X_START, (y - 18) + TITLE_Y_OFFSET, r.logo ? 400 : 520);
+                ctx.fillStyle = colorSub; ctx.font = '17px Helvetica'; ctx.fillText(r.loc, INFO_X_START, y + LOC_Y_OFFSET, r.logo ? 400 : 520);
 
                 if(r.logo) {
                     const img = new Image(); img.src = r.logo;
