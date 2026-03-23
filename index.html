@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="./img/favicon.png">
-    <link rel="icon" type="image/x-icon" href="./img/favicon.png">
     <title>Narc Scheduler</title>
     <style>
         @font-face {
@@ -76,10 +75,7 @@
         .dist-chip input[type="checkbox"] { width: auto; margin: 0; }
         .dist-chip input:checked + span { color: var(--narc-text); font-weight: bold; }
         
-        .custom-dist-in { 
-            width: 70px !important; padding: 4px 8px !important; 
-            font-size: 11px !important; background: #2c2c2e !important;
-        }
+        .custom-dist-in { width: 70px !important; padding: 4px 8px !important; font-size: 11px !important; background: #2c2c2e !important; }
 
         .remove-entry-btn {
             position: absolute; top: -10px; right: -10px;
@@ -88,20 +84,6 @@
             display: flex; align-items: center; justify-content: center; z-index: 5;
             font-weight: bold; font-size: 14px;
         }
-        
-        .clear-logo-blob-btn {
-            position: absolute; top: -6px; right: -6px;
-            background: var(--danger); color: white; border: none;
-            border-radius: 50%; width: 18px; height: 18px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; z-index: 5;
-            font-weight: bold; font-size: 12px;
-        }
-
-        .alt-color-wrap {
-            display: flex; align-items: center; gap: 8px; margin-top: 5px;
-            font-size: 11px; color: var(--narc-subtext); cursor: pointer;
-        }
-        .alt-color-wrap input { width: auto; cursor: pointer; }
 
         button.main-btn {
             padding: 14px; border-radius: 12px; border: none; 
@@ -120,11 +102,11 @@
 
         canvas { display: none; }
         .preview-box {
-            width: 100%; aspect-ratio: 1080/1350; border-radius: 12px; 
+            width: 100%; aspect-ratio: 9/16; border-radius: 12px; 
             border: 1px solid #3a3a3c; position: relative; overflow: hidden;
-            background: #000; display: flex; align-items: center; justify-content: center;
+            background: #000;
         }
-        #preview { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; }
+        #preview { width: 100%; height: 100%; display: none; object-fit: contain; }
     </style>
 </head>
 <body>
@@ -136,7 +118,7 @@
                     <img src="./img/logo.png" style="height: 40px;" onerror="this.style.display='none'">
                 </div>
                 <div id="smart-header-display" style="text-align:center; font-family:'Integral CF'; font-size:12px; color:var(--narc-subtext); margin-bottom:15px;">ADD RUNS</div>
-                <div class="section-label">Footer Tagline</div>
+                <div class="section-label">Footer Tagline (Safe Zone)</div>
                 <input type="text" id="footer-in" class="full-width" value="ALL PACES WELCOME | DISTANCES FLEXIBLE | POST RUN DRINKS">
                 
                 <div style="margin-top: 20px;">
@@ -155,9 +137,9 @@
                 <div class="preview-box">
                     <img id="preview">
                 </div>
-                <a id="download-link" class="download-btn" style="display:none;" download="NARC_Schedule.png">Download PNG</a>
+                <a id="download-link" class="download-btn" style="display:none;" download="NARC_Story_Safe.png">Download PNG</a>
             </div>
-            <canvas id="canvas" width="1080" height="1350"></canvas>
+            <canvas id="canvas" width="1080" height="1920"></canvas>
         </div>
     </div>
 
@@ -169,21 +151,24 @@
         const bgImg = new Image(); bgImg.src = "./img/bg.jpg";
 
         const DIST_OPTIONS = ["5", "10", "16", "21", "30", "42"];
-        const MAX_ENTRIES = 7;
+        const MAX_ENTRIES = 8;
 
         const PRESET_LOGOS = [
             { name: "Kafee VanGogh", path: "./img/logos/vangogh.png" },
             { name: "gigi", path: "./img/logos/gigi.png" },
             { name: "sun run club", path: "./img/logos/src.png" },
-
-
         ];
 
-        const LAYOUT_Y_START = 340;     
-        const LAYOUT_Y_STEP = 150;      
+        // --- SAFE MARGIN CONFIGURATION ---
+        const PADDING_TOP = 250;
+        const PADDING_BOTTOM = 250;
+        const PADDING_SIDE = 60;
+        const CONTENT_WIDTH = 1080 - (PADDING_SIDE * 2);
+
+        const LAYOUT_Y_START = PADDING_TOP + 256; // Start entries after header
+        const LAYOUT_Y_STEP = 155;      
         const TITLE_Y_OFFSET = -6;      
-        const LOC_Y_OFFSET = 0;         
-        const INFO_X_START = 480;
+        const INFO_X_START = 460;
 
         function getHeaderData(dates) {
             if (dates.length === 0) return { range: "ADD RUNS", year: "2026" };
@@ -198,91 +183,48 @@
         }
 
         function createEntry(type, savedData = null) {
-            const currentEntries = document.querySelectorAll('.entry-card').length;
-            if (currentEntries >= MAX_ENTRIES) return;
-
+            if (document.querySelectorAll('.entry-card').length >= MAX_ENTRIES) return;
             const div = document.createElement('div');
             div.className = 'entry-card';
             div.dataset.logo = savedData?.logo || "";
-            
             const isSpecial = type === 'special';
             const defaultAlt = savedData ? savedData.isAlt : (isSpecial ? true : false);
             const selectedDists = savedData?.dists || (isSpecial ? [] : ["5", "10"]);
-
-            const logoOptions = PRESET_LOGOS.map(l => 
-                `<option value="${l.path}" ${savedData?.logo === l.path ? 'selected' : ''}>${l.name}</option>`
-            ).join('');
 
             div.innerHTML = `
                 <button class="remove-entry-btn" onclick="this.parentElement.remove();">×</button>
                 <div class="grid-inputs">
                     <input type="date" class="date-in" value="${savedData?.date || new Date().toISOString().split('T')[0]}">
                     <input type="text" class="time-in" placeholder="TIME" value="${savedData?.time || (isSpecial ? '' : '19:00')}">
-                    
                     <div class="ui-blob full-width">
-                        <span style="font-size:9px; width:100%; color:#888;">DISTANCES</span>
-                        ${DIST_OPTIONS.map(opt => `
-                            <label class="dist-chip">
-                                <input type="checkbox" value="${opt}" ${selectedDists.includes(opt) ? 'checked' : ''}>
-                                <span>${opt}</span>
-                            </label>
-                        `).join('')}
-                        <input type="text" class="custom-dist-in" placeholder="+ CUSTOM" value="${savedData?.customDist || ''}">
+                        ${DIST_OPTIONS.map(opt => `<label class="dist-chip"><input type="checkbox" value="${opt}" ${selectedDists.includes(opt) ? 'checked' : ''}><span>${opt}</span></label>`).join('')}
+                        <input type="text" class="custom-dist-in" placeholder="+" value="${savedData?.customDist || ''}">
                     </div>
-                    
                     <div class="full-width" style="display:flex; gap:10px;">
                         <select class="pace-in" style="flex:1;">
                             <option value="" ${isSpecial ? 'selected' : ''}>NO PACE</option>
                             <option value=">6:30" ${savedData?.pace === '>6:30' || (!savedData && !isSpecial) ? 'selected' : ''}>>6:30 PACE</option>
                             <option value="<6:00" ${savedData?.pace === '<6:00' ? 'selected' : ''}><6:00 PACE</option>
                         </select>
-                        <input type="text" class="custom-pace-in" placeholder="CUSTOM PACE" style="flex:1;" value="${savedData?.customPace || ''}">
+                        <input type="text" class="custom-pace-in" placeholder="CUSTOM" style="flex:1;" value="${savedData?.customPace || ''}">
                     </div>
-
                     <input type="text" class="comm-in full-width" placeholder="TITLE" value="${savedData?.title || (isSpecial ? '' : 'NARC')}">
                     <input type="text" class="loc-in full-width" placeholder="LOCATION" value="${savedData?.loc || (isSpecial ? '' : 'Kafee VanGogh - Hasselt')}">
-                    
                     <div class="ui-blob full-width logo-controls-blob">
-                        <button type="button" class="clear-logo-blob-btn">×</button>
-                        <select class="logo-preset-sel">
-                            <option value="">-- PRESET LOGO --</option>
-                            ${logoOptions}
-                        </select>
-                        <input type="file" class="logo-file" accept="image/*" style="font-size:10px;">
+                        <select class="logo-preset-sel"><option value="">-- LOGO --</option>${PRESET_LOGOS.map(l => `<option value="${l.path}">${l.name}</option>`).join('')}</select>
+                        <input type="file" class="logo-file" accept="image/*">
                     </div>
-
-                    <label class="alt-color-wrap full-width">
-                        <input type="checkbox" class="is-alt" ${defaultAlt ? 'checked' : ''}> ALT COLOR
-                    </label>
+                    <label class="alt-color-wrap full-width"><input type="checkbox" class="is-alt" ${defaultAlt ? 'checked' : ''}> ALT COLOR</label>
                 </div>`;
-
             entriesDiv.appendChild(div);
 
             const sel = div.querySelector('.logo-preset-sel');
             const fileIn = div.querySelector('.logo-file');
-            const clearLogoBtn = div.querySelector('.clear-logo-blob-btn');
-
-            sel.onchange = (e) => { 
-                div.dataset.logo = e.target.value; 
-                if(e.target.value) fileIn.value = "";
-            };
-
+            sel.onchange = (e) => div.dataset.logo = e.target.value;
             fileIn.onchange = (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        div.dataset.logo = ev.target.result;
-                        sel.value = ""; 
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-
-            clearLogoBtn.onclick = () => {
-                div.dataset.logo = "";
-                sel.value = "";
-                fileIn.value = "";
+                const reader = new FileReader();
+                reader.onload = (ev) => { div.dataset.logo = ev.target.result; sel.value = ""; };
+                if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
             };
         }
 
@@ -292,12 +234,11 @@
                 const dList = Array.from(c.querySelectorAll('.ui-blob input:checked')).map(cb => cb.value);
                 const customD = c.querySelector('.custom-dist-in').value;
                 if(customD) dList.push(customD);
-                const customP = c.querySelector('.custom-pace-in').value;
                 return {
                     date: new Date(c.querySelector('.date-in').value),
                     time: c.querySelector('.time-in').value,
                     distStr: dList.join(" / "),
-                    pace: customP || c.querySelector('.pace-in').value,
+                    pace: c.querySelector('.custom-pace-in').value || c.querySelector('.pace-in').value,
                     title: c.querySelector('.comm-in').value.toUpperCase(),
                     loc: c.querySelector('.loc-in').value.toUpperCase(),
                     logo: c.dataset.logo,
@@ -305,55 +246,60 @@
                 };
             }).sort((a,b) => a.date - b.date);
 
-            ctx.fillStyle = '#0a0a0a'; ctx.fillRect(0,0,1080,1350);
+            // Canvas Base
+            ctx.fillStyle = '#0a0a0a'; ctx.fillRect(0,0,1080,1920);
             if(bgImg.complete) {
-                const s = Math.max(1080/bgImg.width, 1350/bgImg.height);
-                ctx.drawImage(bgImg, 540-(bgImg.width*s)/2, 675-(bgImg.height*s)/2, bgImg.width*s, bgImg.height*s);
-                ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(0,0,1080,1350);
+                const s = Math.max(1080/bgImg.width, 1920/bgImg.height);
+                ctx.drawImage(bgImg, 540-(bgImg.width*s)/2, 960-(bgImg.height*s)/2, bgImg.width*s, bgImg.height*s);
+                ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.fillRect(0,0,1080,1920);
             }
+
+            // --- HEADER (Inside Safe Top) ---
             if(mainLogo.complete) {
-                const h=100, w=(mainLogo.width/mainLogo.height)*h;
-                ctx.drawImage(mainLogo, 540-w/2, 50, w, h);
+                const h=85, w=(mainLogo.width/mainLogo.height)*h;
+                ctx.drawImage(mainLogo, 540-w/2, PADDING_TOP, w, h);
             }
 
             const dates = Array.from(document.querySelectorAll('.date-in')).map(i => i.value).filter(v => v);
             const head = getHeaderData(dates);
             document.getElementById('smart-header-display').innerText = `${head.range}  |  ${head.year}`;
-            ctx.fillStyle = 'white'; ctx.font = '28px "Integral CF"'; 
-            ctx.textAlign = 'left'; ctx.fillText(head.range, 100, 215);
-            ctx.textAlign = 'right'; ctx.fillText(head.year, 980, 215);
+            ctx.fillStyle = 'white'; ctx.font = '26px "Integral CF"'; 
+            ctx.textAlign = 'left'; ctx.fillText(head.range, PADDING_SIDE, PADDING_TOP + 140);
+            ctx.textAlign = 'right'; ctx.fillText(head.year, 1080 - PADDING_SIDE, PADDING_TOP + 140);
 
+            // --- ENTRIES ---
             for(let i=0; i<data.length; i++) {
                 const r = data[i], y = LAYOUT_Y_START + (i * LAYOUT_Y_STEP);
                 const colorMain = r.isAlt ? '#ffd98d' : 'white';
                 const colorSub = '#a1a1a6';
 
                 ctx.textAlign = 'left'; ctx.fillStyle = colorMain; ctx.font = '64px "Integral CF"';
-                ctx.fillText(String(r.date.getDate()).padStart(2,'0'), 100, y);
-                ctx.font = 'bold 18px "Integral CF"'; ctx.fillText(r.date.toLocaleDateString('en-GB',{weekday:'short'}).toUpperCase(), 210, y - 32);
-                ctx.fillStyle = colorSub; ctx.font = '18px Helvetica'; ctx.fillText(r.time, 210, y);
+                ctx.fillText(String(r.date.getDate()).padStart(2,'0'), PADDING_SIDE, y);
+                ctx.font = 'bold 18px "Integral CF"'; ctx.fillText(r.date.toLocaleDateString('en-GB',{weekday:'short'}).toUpperCase(), PADDING_SIDE + 110, y - 32);
+                ctx.fillStyle = colorSub; ctx.font = '18px Helvetica'; ctx.fillText(r.time, PADDING_SIDE + 110, y);
 
                 ctx.textAlign = 'left'; ctx.fillStyle = colorMain;
                 ctx.font = 'bold 20px "Integral CF"'; 
-                if(r.distStr) ctx.fillText(`📏 ${r.distStr}`, 340, y - 32);
+                if(r.distStr) ctx.fillText(`📏 ${r.distStr}`, PADDING_SIDE + 250, y - 32);
                 ctx.fillStyle = colorSub; ctx.font = '18px Helvetica'; 
-                if(r.pace) ctx.fillText(`🏃‍♀️ ${r.pace}`, 340, y);
+                if(r.pace) ctx.fillText(`🏃‍♀️ ${r.pace}`, PADDING_SIDE + 250, y);
 
                 ctx.textAlign = 'left'; ctx.fillStyle = colorMain;
-                ctx.font = 'italic 34px "Integral CF"'; ctx.fillText(r.title, INFO_X_START, (y - 18) + TITLE_Y_OFFSET, r.logo ? 400 : 520);
-                ctx.fillStyle = colorSub; ctx.font = '17px Helvetica'; ctx.fillText(r.loc, INFO_X_START, y + LOC_Y_OFFSET, r.logo ? 400 : 520);
+                ctx.font = 'italic 34px "Integral CF"'; ctx.fillText(r.title, INFO_X_START, (y - 18) + TITLE_Y_OFFSET, r.logo ? 340 : 500);
+                ctx.fillStyle = colorSub; ctx.font = '17px Helvetica'; ctx.fillText(r.loc, INFO_X_START, y, r.logo ? 340 : 500);
 
                 if(r.logo) {
                     const img = new Image(); img.src = r.logo;
                     if(img.complete) {
                         const h=70, w=h*(img.width/img.height); 
-                        ctx.drawImage(img, 980-w, y-60, w, h);
+                        ctx.drawImage(img, (1080 - PADDING_SIDE) - w, y-60, w, h);
                     }
                 }
             }
             
-            ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = '20px "Integral CF"'; ctx.textAlign='center';
-            ctx.fillText(document.getElementById('footer-in').value, 540, 1315);
+            // --- FOOTER (Inside Safe Bottom) ---
+            ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = '18px "Integral CF"'; ctx.textAlign='center';
+            ctx.fillText(document.getElementById('footer-in').value, 540, 1920 - PADDING_BOTTOM);
             
             const out = canvas.toDataURL('image/png');
             document.getElementById('preview').src = out;
@@ -365,8 +311,7 @@
         createEntry('weekly');
         document.getElementById('add-weekly').onclick = () => createEntry('weekly');
         document.getElementById('add-special').onclick = () => createEntry('special');
-
-        setInterval(updatePreview, 100);
+        setInterval(updatePreview, 300);
     </script>
 </body>
 </html>
